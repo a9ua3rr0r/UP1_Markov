@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LibTool - Управление библиотекой</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app">
+        <!-- Боковая панель -->
+        <aside class="sidebar">
+            <div class="brand">
+                <div class="logo">📚</div>
+                <div class="title">LibTool</div>
+            </div>
+
+            <nav class="navigation">
+                <button class="nav-btn active" data-page="books">
+                    <span>📖</span>
+                    <span>Каталог книг</span>
+                </button>
+                <button class="nav-btn" data-page="readers">
+                    <span>👥</span>
+                    <span>Читатели</span>
+                </button>
+                <button class="nav-btn" data-page="issues">
+                    <span>🔄</span>
+                    <span>Выдача/Возврат</span>
+                </button>
+                <button class="nav-btn" data-page="reports">
+                    <span>📊</span>
+                    <span>Отчеты</span>
+                </button>
+                <button id="downloadRules" class="btn btn-info">
+                    <i class="fas fa-download"></i> Скачать правила библиотеки
+                </button>
+            </nav>
+
+            <div class="page-actions">
+                <div id="books-actions" class="page-action active">
+                    <button id="btn-new-book" class="btn primary">
+                        <span>+</span>
+                        <span>Добавить книгу</span>
+                    </button>
+                </div>
+
+                <div id="readers-actions" class="page-action">
+                    <button id="btn-new-reader" class="btn primary">
+                        <span>+</span>
+                        <span>Добавить читателя</span>
+                    </button>
+                </div>
+
+                <div id="issues-actions" class="page-action" style="gap: 20px;">
+                    <button id="btn-new-issue" class="btn primary">
+                        <span>📋</span>
+                        <span>Оформить выдачу</span>
+                    </button>
+                    <button id="btn-export-excel" class="btn success">
+                        <span>📊</span>
+                        <span>Экспорт в Excel</span>
+                    </button>
+                </div>
+
+                <div id="reports-actions" class="page-action">
+                    <button id="btn-refresh-stats" class="btn primary">
+                        <span>🔄</span>
+                        <span>Обновить отчеты</span>
+                    </button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Основной контент -->
+        <main class="main">
+            <header class="topbar">
+                <h1 id="page-title">Каталог книг</h1>
+            </header>
+
+            <section class="content">
+                <!-- Фильтры -->
+                <div class="filters">
+                    <div id="books-filters" class="filter-group active">
+                        <div class="filter-item">
+                            <label for="search">Поиск книг</label>
+                            <input type="text" id="search" placeholder="По названию или автору...">
+                        </div>
+                        <div class="filter-item">
+                            <label for="filter-status">Статус</label>
+                            <select id="filter-status">
+                                <option value="">Все статусы</option>
+                                <option value="available">Доступно</option>
+                                <option value="issued">Выдано</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div id="readers-filters" class="filter-group">
+                        <div class="filter-item">
+                            <label for="search-readers">Поиск читателей</label>
+                            <input type="text" id="search-readers" placeholder="По ФИО...">
+                        </div>
+                        <div class="filter-item">
+                            <label for="filter-status-readers">Статус</label>
+                            <select id="filter-status-readers">
+                                <option value="">Все статусы</option>
+                                <option value="active">Активен</option>
+                                <option value="inactive">Неактивен</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div id="issues-filters" class="filter-group">
+                        <div class="filter-item">
+                            <label for="filter-status-issues">Статус выдачи</label>
+                            <select id="filter-status-issues">
+                                <option value="">Все статусы</option>
+                                <option value="issued">Выданы</option>
+                                <option value="overdue">Просрочены</option>
+                                <option value="returned">Возвращены</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Страницы -->
+                <div id="books-page" class="page active">
+                    <div id="books-loading" class="loading">Загрузка книг...</div>
+                    <div id="books-container" class="books-container"></div>
+                </div>
+
+                <div id="readers-page" class="page">
+                    <div id="readers-loading" class="loading">Загрузка читателей...</div>
+                    <div id="readers-container" class="readers-container"></div>
+                </div>
+
+                <div id="issues-page" class="page">
+                    <div id="issues-loading" class="loading">Загрузка данных о выдаче...</div>
+                    <div id="issues-container" class="issues-container"></div>
+                </div>
+
+                <div id="reports-page" class="page">
+                    <div id="reports-loading" class="loading">Загрузка отчетов...</div>
+                    <div id="reports-container" class="reports-container"></div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Модальные окна -->
+    <!-- Модальное окно для книги -->
+    <div id="modal-book" class="modal hidden">
+        <div class="modal-body">
+            <h3 id="modal-book-title">Добавить книгу</h3>
+            <form id="book-form">
+                <input type="hidden" id="book-id">
+
+                <div class="form-group">
+                    <label for="book-name">Название книги *</label>
+                    <input type="text" id="book-name" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="book-author">Автор *</label>
+                    <input type="text" id="book-author" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="book-genre">Жанр</label>
+                    <input type="text" id="book-genre">
+                </div>
+
+                <div class="form-group">
+                    <label for="book-count">Количество *</label>
+                    <input type="number" id="book-count" min="1" value="1" required>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" id="book-delete" class="btn danger hidden">
+                        <span>🗑️</span>
+                        <span>Удалить</span>
+                    </button>
+                    <div style="flex: 1"></div>
+                    <button type="button" id="book-cancel" class="btn secondary">
+                        <span>❌</span>
+                        <span>Отмена</span>
+                    </button>
+                    <button type="submit" class="btn primary">
+                        <span>💾</span>
+                        <span>Сохранить</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Модальное окно для читателя -->
+    <div id="modal-reader" class="modal hidden">
+        <div class="modal-body">
+            <h3 id="modal-reader-title">Добавить читателя</h3>
+            <form id="reader-form">
+                <input type="hidden" id="reader-id">
+
+                <div class="form-group">
+                    <label for="reader-name">ФИО *</label>
+                    <input type="text" id="reader-name" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="reader-phone">Телефон</label>
+                    <input type="text" id="reader-phone">
+                </div>
+
+                <div class="form-group">
+                    <label for="reader-email">Email</label>
+                    <input type="email" id="reader-email">
+                </div>
+
+                <div class="form-group">
+                    <label for="reader-address">Адрес</label>
+                    <textarea id="reader-address" rows="3"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="reader-status">Статус</label>
+                    <select id="reader-status">
+                        <option value="active">Активен</option>
+                        <option value="inactive">Неактивен</option>
+                    </select>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" id="reader-delete" class="btn danger hidden">
+                        <span>🗑️</span>
+                        <span>Удалить</span>
+                    </button>
+                    <div style="flex: 1"></div>
+                    <button type="button" id="reader-cancel" class="btn secondary">
+                        <span>❌</span>
+                        <span>Отмена</span>
+                    </button>
+                    <button type="submit" class="btn primary">
+                        <span>💾</span>
+                        <span>Сохранить</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Модальное окно для выдачи книги -->
+    <div id="modal-issue" class="modal hidden">
+        <div class="modal-body">
+            <h3>Оформить выдачу книги</h3>
+            <form id="issue-form">
+                <div class="form-group">
+                    <label for="issue-book">Книга *</label>
+                    <select id="issue-book" required>
+                        <option value="">Выберите книгу</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="issue-reader">Читатель *</label>
+                    <select id="issue-reader" required>
+                        <option value="">Выберите читателя</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="issue-date">Дата выдачи *</label>
+                    <input type="date" id="issue-date" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="issue-return-date">Планируемая дата возврата *</label>
+                    <input type="date" id="issue-return-date" required>
+                </div>
+
+                <div class="modal-actions">
+                    <div style="flex: 1"></div>
+                    <button type="button" id="issue-cancel" class="btn secondary">
+                        <span>❌</span>
+                        <span>Отмена</span>
+                    </button>
+                    <button type="submit" class="btn primary">
+                        <span>📋</span>
+                        <span>Оформить выдачу</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="/static/js/app.js"></script>
+</body>
+</html>
